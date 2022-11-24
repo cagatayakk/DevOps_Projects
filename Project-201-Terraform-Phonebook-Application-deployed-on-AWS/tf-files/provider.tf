@@ -1,23 +1,22 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
-      version = "4.40.0"
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
     }
+
     github = {
-      source = "integrations/github"
-      version = "4.23.0"
+      source  = "integrations/github"
+      version = "5.9.1"
     }
   }
 }
 
+
 provider "aws" {
-  # Configuration options
   region = "us-east-1"
-  profile = "cw-training"
 }
 
 provider "github" {
-  # Configuration options
-  token = "xxxxxxxxxxxxxxxxxxxxxxxxx"
+  token = "ghp_********************************"
 }
