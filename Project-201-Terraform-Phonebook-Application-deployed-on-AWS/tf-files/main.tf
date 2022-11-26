@@ -24,7 +24,7 @@ resource "aws_launch_template" "asg-lt" {
   name                   = "phonebook-lt"
   image_id               = data.aws_ami.amzon-linux-2.id
   instance_type          = "t2.micro"
-  key_name               = "First_Key"
+  key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.server-sg.id]
   depends_on = [ github_repository_file.dbendpoint ]
   tag_specifications {
