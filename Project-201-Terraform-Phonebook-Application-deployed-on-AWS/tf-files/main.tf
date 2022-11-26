@@ -74,7 +74,7 @@ resource "aws_autoscaling_group" "app-asg" {
   name = "phonebook-asg"
   #vpc_zone_identifier = data.aws_subnets.example.ids
   vpc_zone_identifier       = aws_lb.app-lb.subnets
-  desired_capacity          = 1
+  desired_capacity          = 2
   max_size                  = 3
   min_size                  = 1
   health_check_type         = "ELB"
@@ -84,6 +84,20 @@ resource "aws_autoscaling_group" "app-asg" {
   launch_template {
     id      = aws_launch_template.asg-lt.id
     version = "$Latest"
+  }
+}
+
+resource "aws_autoscaling_policy" "target-asp" {
+  name = "target-AutoScalingPolicy"
+  autoscaling_group_name = aws_autoscaling_group.app-asg.name
+  policy_type = "TargetTrackingScaling"
+  
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+
+    target_value = 60.0
   }
 }
 
