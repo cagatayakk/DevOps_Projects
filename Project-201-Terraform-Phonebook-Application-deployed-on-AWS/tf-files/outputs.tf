@@ -3,5 +3,5 @@ output "websiteurl" {
 }
 
 output "websiteurl-2" {
-  value = "https://www.cagatayakkiran.com"
+  value = "http://www.${var.domain_name}"
 }
