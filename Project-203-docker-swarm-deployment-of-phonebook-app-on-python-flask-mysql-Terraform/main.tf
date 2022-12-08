@@ -51,7 +51,8 @@ data "template_file" "leader-master" {
       --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
       dockersamples/visualizer
     yum install git -y
-    docker build --force-rm -t "${aws_ecr_repository.ecr-repo.repository_url}:latest" ${local.github-repo}
+    #docker build --force-rm -t "${aws_ecr_repository.ecr-repo.repository_url}:latest" ${local.github-repo}
+    docker build --force-rm -t "${aws_ecr_repository.ecr-repo.repository_url}:latest" ${local.github-repo}#main
     docker push "${aws_ecr_repository.ecr-repo.repository_url}:latest"
     mkdir -p /home/ec2-user/phonebook
     cd /home/ec2-user/phonebook && echo "ECR_REPO=${aws_ecr_repository.ecr-repo.repository_url}" > .env
