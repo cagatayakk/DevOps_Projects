@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: web
+  template:
+    metadata:
+      labels:
+        name: web
+    spec:
+      containers:
+      - name: web
+        image: cagatayakk/phonebook-web
+        envFrom:
+        - secretRef:
+           name: mysecret
+        - configMapRef:
+           name: myconfigmap
+        resources:
+        ports:
+        - containerPort: 80

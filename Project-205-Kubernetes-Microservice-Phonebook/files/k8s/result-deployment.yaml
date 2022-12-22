@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: result
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: result
+  template:
+    metadata:
+      labels:
+        name: result
+    spec:
+      containers:
+      - name: result
+        image: cagatayakk/phonebook-result
+        envFrom:
+        - secretRef:
+           name: mysecret
+        - configMapRef:
+           name: myconfigmap
+        resources:
+        ports:
+        - containerPort: 80
