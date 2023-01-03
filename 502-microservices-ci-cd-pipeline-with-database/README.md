@@ -2,7 +2,7 @@
 
 ## Description
 
-This project aims to create full CI/CD Pipeline for microservice based applications using [Spring Petclinic Microservices Application](https://github.com/spring-petclinic/spring-petclinic-microservices). Jenkins Server deployed on Elastic Compute Cloud (EC2) Instance is used as CI/CD Server to build pipelines.
+In this project, fully automated microservices application is used. Dockerized Web Application is developed in Java Springboot and Spring Cloud Frameworks and integrated with MySQL database. The project is to create full microservices, CI/CD Pipelines, and deployment on a Kubernetes cluster with monitoring. Kubernetes cluster is created and managed with Rancher. Jenkins is used as the CI/CD automation tool and created all the infrastructure on AWS EC2 Service. Also, GitHub is used as the version control system during the whole process. Base branches namely master, dev, and release are prepared for the DevOps cycle.
 
 ## DevOps Pipelines
 
