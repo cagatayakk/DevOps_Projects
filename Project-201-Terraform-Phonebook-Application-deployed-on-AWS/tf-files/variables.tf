@@ -4,5 +4,5 @@ variable "domain_name" {
 
 variable "key_name" {
   description = "Key Name for SSH connection."  
-  default = "First_Key"
+  default = "cagatayakk"
 }
