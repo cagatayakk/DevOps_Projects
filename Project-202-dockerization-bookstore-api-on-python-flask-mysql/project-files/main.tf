@@ -50,7 +50,7 @@ resource "aws_instance" "tf-docker-ec2" {
   depends_on = [github_repository.myrepo, github_repository_file.myfiles]
   ami = "ami-0f9fc25dd2506cf6d"
   instance_type = "t2.micro"
-  key_name = "First_Key"
+  key_name = "cagatayakk"
   security_groups = ["docker-sec-gr-203"]
   tags = {
     "Name" = "Web Server of Book Store"
