@@ -137,7 +137,7 @@ variable "instancetype" {
   default = "t2.micro"
 }
 variable "mykey" {
-  default = "First_Key"
+  default = "cagatayakk"
 }
 
 resource "aws_instance" "docker-machine-leader-manager" {
