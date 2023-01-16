@@ -1,0 +1,199 @@
+- name: configure PostreSQL node
+  hosts: _development
+  become: true
+  tasks:
+    - name: update packeges
+      yum:
+        name: "*"  #all packages
+        state: latest
+
+    - name: uninstall old versions  # https://docs.docker.com/engine/install/centos/
+      yum: 
+        name: "{{ item }}"
+        state: removed
+      loop:
+        - docker
+        - docker-client
+        - docker-client-latest
+        - docker-common
+        - docker-latest
+        - docker-latest-logrotate
+        - docker-logrotate
+        - docker-engine
+
+    - name: install yum-utils
+      yum: 
+        name: yum-utils
+        state: latest
+
+    - name: Add Docker repo  
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+
+    - name: install docker
+      package:  
+        name: docker-ce
+        state: latest
+
+    - name: install pip   # https://docs.ansible.com/ansible/2.9/modules/docker_image_module.html
+      package: 
+        name: python3-pip
+        state: latest
+    
+    - name: install docker-sdk  # https://docs.ansible.com/ansible/2.9/modules/docker_image_module.html
+      pip: 
+        name: docker
+
+    - name: add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: start docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+
+- name: postgre database config
+  hosts: _ansible_postgresql
+  become: true
+  vars: 
+    postgre_container: /home/ec2-user/postgresql
+    container_name: cagatayakk_postgre
+    image_name: cagatayakk/postgre
+    password: Pp123456789
+  tasks:
+    - name: create build directory
+      file:
+        path: "{{ postgre_container }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: copy the sql script
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/postgres/init.sql"
+        dest: "{{ postgre_container }}"
+
+    - name: copy the Dockerfile
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/postgres/Dockerfile"
+        dest: "{{ postgre_container }}"
+
+    - name: remove {{ container_name }} container and {{ image_name }} if exists
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ image_name }} || echo 'Not Found'"
+
+    - name: build container image
+      docker_image:
+        name: "{{ image_name }}"
+        build:
+          path: "{{ postgre_container }}"
+        source: build
+        state: present
+
+    - name: Launch postgresql docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports: 
+        - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: "{{ password }}"
+        volumes:
+          - /db-data:/var/lib/postgresql/data
+
+- name: Nodejs Server configuration
+  hosts: _ansible_nodejs
+  become: true
+  vars: 
+    container_path: /home/ec2-user/nodejs
+    container_name: cagatayakk_nodejs
+    image_name: cagatayakk/nodejs
+  tasks:
+    - name: create build directory
+      file:
+        path: "{{ container_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: copy files to the nodejs node
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/nodejs/server/"
+        dest: "{{ container_path }}"
+
+    - name: copy the Dockerfile
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/nodejs/Dockerfile"
+        dest: "{{ container_path }}"
+
+    - name: remove {{ container_name }} container and {{ image_name }} if exists
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ image_name }} || echo 'Not Found'"
+
+    - name: build container image
+      docker_image:
+        name: "{{ image_name }}"
+        build:
+          path: "{{ container_path }}"
+        source: build
+        state: present
+
+    - name: Launch nodejs docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports:
+        - "5000:5000"
+
+- name: React UI Server configuration
+  hosts: _ansible_react
+  become: true
+  vars: 
+    container_path: /home/ec2-user/react
+    container_name: cagatayakk_react
+    image_name: cagatayakk/react
+  tasks:
+    - name: create build directory
+      file:
+        path: "{{ container_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: copy files to the react node
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/react/client/"
+        dest: "{{ container_path }}"
+
+    - name: copy the Dockerfile
+      copy:
+        src: "/home/ec2-user/ansible/ansible-project/react/Dockerfile"
+        dest: "{{ container_path }}"
+
+    - name: remove {{ container_name }} container and {{ image_name }} image if exists
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ image_name }} || echo 'Not Found'"
+
+    - name: build container image
+      docker_image:
+        name: "{{ image_name }}"
+        build:
+          path: "{{ container_path }}"
+        source: build
+        state: present
+
+    - name: Launch react docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports:
+        - "3000:3000"
