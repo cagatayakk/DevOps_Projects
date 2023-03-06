@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
 
-  database:  # Service ismi "database" olmak zorunda, degistirirsek app baglanti kuramiyor. 
+  database:  # The service name has to be "database", if we change it the app cannot establish a connection.
     image: mysql:5.7  
     container_name: database 
     environment:
