@@ -10,8 +10,9 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-
+# AWS Hesabinin AccountID'sini cekmek icin kullaniyoruz.
 data "aws_caller_identity" "current" {}
+
 
 data "aws_region" "current" {
     name="us-east-1"  
@@ -25,6 +26,7 @@ locals {
   github-file-url= "https://raw.githubusercontent.com/cagatayakk/phonebook_swarm/master/"
 }
 
+# userdata'yi bu sekilde girerek icinde terraform referanslari kullanabiliyoruz.
 data "template_file" "leader-master" {
   template = <<EOF
     #! /bin/bash
@@ -56,8 +58,11 @@ data "template_file" "leader-master" {
     docker push "${aws_ecr_repository.ecr-repo.repository_url}:latest"
     mkdir -p /home/ec2-user/phonebook
     cd /home/ec2-user/phonebook && echo "ECR_REPO=${aws_ecr_repository.ecr-repo.repository_url}" > .env
+    # -o : local'de dosyanin adini docker-compose.yaml yap
     curl -o "docker-compose.yml" -L ${local.github-file-url}docker-compose.yml
     curl -o "init.sql" -L ${local.github-file-url}init.sql
+    # docker-compose config komutu dogru calisirsa ciktisini pipe'in saginda girdi olarak kullanirim.
+    # --with-registry-auth  : kimlik dogrulama bilgilerimi gönder demek.
     docker-compose config | docker stack deploy --with-registry-auth -c - phonebook
 EOF
 }
@@ -85,6 +90,7 @@ data "template_file" "manager" {
     yum install python-pip -y
     pip install ec2instanceconnectcli
     aws ec2 wait instance-status-ok --instance-ids ${aws_instance.docker-machine-leader-manager.id}
+    # eval  parantez icindeki komutlari terminalde bizim icin girer.
     eval "$(mssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  \
     --region ${data.aws_region.current.name} ${aws_instance.docker-machine-leader-manager.id} docker swarm join-token manager | grep -i 'docker')"
   EOF
@@ -127,6 +133,7 @@ resource "aws_ecr_repository" "ecr-repo" {
   image_scanning_configuration {
     scan_on_push = false
   }
+  # bu komut ile dolu olan repoyu force uygulayarak sileriz. Manuel olarak image'lari repodan silmeye gerek kalmaz.
   force_delete = true
 }
 
@@ -183,8 +190,9 @@ resource "aws_instance" "docker-machine-workers" {
   depends_on = [aws_instance.docker-machine-leader-manager]
 }
 
+# kendini tekrar eden ingress bloklari ldugu icin dynamic ingress kullaniyoruz.
 variable "sg-ports" {
-  default = [80, 22, 2377, 7946, 8080]
+  default = [80, 22, 2377, 7946, 8080]  
 }
 
 resource "aws_security_group" "tf-docker-sec-gr" {
@@ -237,6 +245,8 @@ resource "aws_iam_role" "ec2fulltoecr" {
       },
     ]
   })
+  ## Burada ec2-connect-cli metodunu kullanabilmek icin inline policy tanimliyoruz. Bu metod ile instanceid araciligi ile olusacak makinalara pem key'i 
+  ## kopyalamadan baglanti saglamak icin kullaniyoruz. 91. satirda bunu pip ile yükledik
   inline_policy {
     name = "my_inline_policy"
 
@@ -264,6 +274,7 @@ resource "aws_iam_role" "ec2fulltoecr" {
   managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
 }
 
+# makinalara Rolleri atamak icin profile tanimlamamiz gerekir.
 resource "aws_iam_instance_profile" "ec2ecr-profile" {
   name = "swarmprofileproje204"
   role = aws_iam_role.ec2fulltoecr.name
