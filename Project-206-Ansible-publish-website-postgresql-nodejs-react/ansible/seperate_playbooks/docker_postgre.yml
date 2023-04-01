@@ -2,7 +2,7 @@
   hosts: _ansible_postgresql
   become: true
   vars_files:
-    - secret.yml
+    - secret.yml   # password: "1234"
   tasks:
     - name: update packeges
       yum:
