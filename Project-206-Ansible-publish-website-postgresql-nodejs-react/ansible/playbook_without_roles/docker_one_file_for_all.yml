@@ -35,7 +35,9 @@
       package:  
         name: docker-ce
         state: latest
-
+      # Docker'ı yüklemek için docker-ce paketi adını kullanırız, çünkü bu, Docker'ın en son resmi sürümünü yüklememizi sağlar. 
+      # docker paketi, mevcut sistemde farklı bir Docker sürümünü yükleme riskini taşıyabilir veya belirli bir sistem için uygun olmayabilir.
+      
     - name: install pip   # https://docs.ansible.com/ansible/2.9/modules/docker_image_module.html
       package: 
         name: python3-pip
