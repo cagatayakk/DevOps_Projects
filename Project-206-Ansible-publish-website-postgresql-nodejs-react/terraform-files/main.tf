@@ -142,6 +142,7 @@ resource "null_resource" "config" {
     inline = [
       "sudo hostnamectl set-hostname Control-Node",
       "sudo yum install -y python3",
+      "sudo yum install -y pip",
       "pip3 install --user ansible",
       "pip3 install --user boto3",
       "chmod 400 ${var.mykey}.pem"
